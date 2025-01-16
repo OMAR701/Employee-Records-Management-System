@@ -1,0 +1,13 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Logs
+logs/
+*.log
+
+# Target folder
+target/
+
+# Maven
+*.class
