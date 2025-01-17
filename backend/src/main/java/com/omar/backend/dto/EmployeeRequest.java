@@ -8,7 +8,6 @@ import java.time.LocalDate;
 
 @JsonInclude(Include.NON_EMPTY)
 public record EmployeeRequest(
-        @NotNull(message = "Employee ID must be provided")
         Integer employeeId,
 
         @NotBlank(message = "Full name must not be blank")

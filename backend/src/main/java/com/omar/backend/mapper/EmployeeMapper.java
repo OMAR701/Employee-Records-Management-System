@@ -9,7 +9,6 @@ public class EmployeeMapper {
 
     public Employee toEntity(EmployeeRequest request) {
         return Employee.builder()
-                .employeeId(request.employeeId())
                 .fullName(request.fullName())
                 .jobTitle(request.jobTitle())
                 .department(request.department())

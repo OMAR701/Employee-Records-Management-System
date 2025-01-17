@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.util.List;
 
 @RestController
@@ -23,36 +24,40 @@ public class EmployeeController {
     }
 
     @Operation(summary = "Create a new employee", description = "Allows admin to create a new employee")
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PostMapping("/create")
     public ResponseEntity<Employee> createEmployee(@Valid @RequestBody EmployeeRequest request) {
-        return ResponseEntity.ok(employeeService.createEmployee(request));
+        Employee createdEmployee = employeeService.createEmployee(request);
+        return ResponseEntity.ok(createdEmployee);
     }
 
     @Operation(summary = "Retrieve all employees", description = "Fetch all employees, accessible by Admin, HR, and Manager roles")
-    @PreAuthorize("hasAnyRole('ADMIN', 'HR', 'MANAGER')")
-    @GetMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER')")
+    @GetMapping("/list")
     public ResponseEntity<List<EmployeeRequest>> getAllEmployees() {
-        return ResponseEntity.ok(employeeService.getAllEmployees());
+        List<EmployeeRequest> employees = employeeService.getAllEmployees();
+        return ResponseEntity.ok(employees);
     }
 
-    @Operation(summary = "Retrieve all employees", description = "Fetch all employees, accessible by Admin, HR, and Manager roles")
-    @PreAuthorize("hasAnyRole('ADMIN', 'HR', 'MANAGER')")
-    @GetMapping("/{id}")
+    @Operation(summary = "Retrieve employee by ID", description = "Fetch an employee by ID, accessible by Admin, HR, and Manager roles")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER')")
+    @GetMapping("/details/{id}")
     public ResponseEntity<EmployeeRequest> getEmployeeById(@PathVariable Integer id) {
-        return ResponseEntity.ok(employeeService.getEmployeeById(id));
+        EmployeeRequest employee = employeeService.getEmployeeById(id);
+        return ResponseEntity.ok(employee);
     }
 
     @Operation(summary = "Update Employee", description = "Update an employee's details by ID. Accessible to Admin, HR, and Manager roles.")
-    @PreAuthorize("hasAnyRole('ADMIN', 'HR', 'MANAGER')")
-    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER')")
+    @PutMapping("/update/{id}")
     public ResponseEntity<Employee> updateEmployee(@PathVariable Integer id, @Valid @RequestBody EmployeeRequest request) {
-        return ResponseEntity.ok(employeeService.updateEmployee(id, request));
+        Employee updatedEmployee = employeeService.updateEmployee(id, request);
+        return ResponseEntity.ok(updatedEmployee);
     }
 
-    @Operation(summary = "Delete Employee", description = "Delete an employee by ID. Only accessible to Admin.")
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete Employee", description = "Delete an employee by ID. Only accessible to HR.")
+    @PreAuthorize("hasAuthority('ROLE_HR')")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteEmployee(@PathVariable Integer id) {
         employeeService.deleteEmployee(id);
         return ResponseEntity.noContent().build();

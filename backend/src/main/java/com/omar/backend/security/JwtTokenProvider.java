@@ -11,7 +11,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,7 +28,7 @@ public class JwtTokenProvider {
 
     @PostConstruct
     public void init() {
-        byte[] decodedKey = java.util.Base64.getDecoder().decode(jwtSecret);
+        byte[] decodedKey = Base64.getDecoder().decode(jwtSecret);
         this.key = Keys.hmacShaKeyFor(decodedKey);
     }
 
@@ -55,7 +54,10 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
+            Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             return false;
@@ -63,17 +65,18 @@ public class JwtTokenProvider {
     }
 
     public String getUsernameFromToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(jwtSecret)
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
     }
 
-
     public List<GrantedAuthority> getAuthoritiesFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecret)
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
 
