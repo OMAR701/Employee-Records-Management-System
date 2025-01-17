@@ -2,25 +2,28 @@ package com.omar.backend.models;
 
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.Size;
+import lombok.*;
 
 import java.time.LocalDate;
 
-@Entity
+
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(name = "employees")
+@Entity
 public class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer employeeId;
 
     @Column(nullable = false)
+    @Size(max = 100, message = "Full name must not exceed 100 characters")
     private String fullName;
-
-    @Column(unique = true, nullable = false)
-    private String employeeId;
 
     private String jobTitle;
     private String department;

@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: EmployeeRecordsManagementSystem
   datasource:
     url: jdbc:oracle:thin:@localhost:1521:xe
     username: system
@@ -10,9 +12,62 @@ spring:
       ddl-auto: update
     show-sql: true
   security:
-    user:
-      name: admin
-      password: admin
+    roles:
+      admin: ROLE_ADMIN
+      hr: ROLE_HR
+      manager: ROLE_MANAGER
+    permissions:
+      admin: ALL
+      hr: CRUD
+      manager: READ,UPDATE_LIMITED
+    ignored: /swagger-ui/**, /v3/api-docs/**
 
-server:
-  port: 8080
+  jwt:
+    secret: bI4mPVIC3ZAF0Fgm6TesVqwM1+5V9PkGmeibTQ2xgTL4Mx0QJs09oDR25ZNiAFrvR+W7qoZLafgGMpN/nTmvYQ==
+    expiration: 3600
+
+logging:
+  level:
+    root: INFO
+    org.springframework: DEBUG
+    com.omar.backend: TRACE
+
+swagger:
+  title: "Employee Records Management System API"
+  description: "API Documentation for managing employee records and roles"
+  version: "1.0.0"
+  contact:
+    name: "Omar"
+    url: "https://github.com/OMAR701"
+    email: "omarkader701@gmail.com"
+api:
+  base-path: /api/v1
+
+employee:
+  roles:
+    manager:
+      update-fields:
+        - jobTitle
+        - contactInfo
+    admin:
+      update-fields:
+        - fullName
+        - jobTitle
+        - department
+        - hireDate
+        - employmentStatus
+        - contactInfo
+        - address
+    hr:
+      update-fields: all
+
+messages:
+  error:
+    user:
+      notfound: "User not found"
+    employee:
+      notfound: "Employee not found with ID: {0}"
+    manager:
+      department: "Managers can only update employees in their own department"
+    access:
+      denied: "Access denied"
