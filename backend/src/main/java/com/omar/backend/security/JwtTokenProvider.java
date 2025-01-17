@@ -6,6 +6,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.Authentication;
@@ -15,6 +16,7 @@ import java.security.Key;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Profile("!test")
 @Component
 public class JwtTokenProvider {
 

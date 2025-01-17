@@ -6,10 +6,15 @@ spring:
     username: system
     password: 12345
     driver-class-name: oracle.jdbc.OracleDriver
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
   jpa:
     database-platform: org.hibernate.dialect.OracleDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
+    defer-datasource-initialization: true # Ensure data.sql runs after schema creation
     show-sql: true
   security:
     roles:
@@ -21,7 +26,6 @@ spring:
       hr: CRUD
       manager: READ,UPDATE_LIMITED
     ignored: /swagger-ui/**, /v3/api-docs/**
-
   jwt:
     secret: bI4mPVIC3ZAF0Fgm6TesVqwM1+5V9PkGmeibTQ2xgTL4Mx0QJs09oDR25ZNiAFrvR+W7qoZLafgGMpN/nTmvYQ==
     expiration: 3600

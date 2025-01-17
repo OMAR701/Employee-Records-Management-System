@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.security.access.AccessDeniedException;
 
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -79,5 +81,32 @@ public class EmployeeService {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + id));
         employeeRepository.delete(employee);
+    }
+
+
+    public List<EmployeeRequest> searchEmployees(String name, String jobTitle) {
+        List<Employee> employees;
+
+        if (name != null && jobTitle != null) {
+            employees = employeeRepository.findByFullNameContainingIgnoreCaseAndJobTitleContainingIgnoreCase(name, jobTitle);
+        } else if (name != null) {
+            employees = employeeRepository.findByFullNameContainingIgnoreCase(name);
+        } else if (jobTitle != null) {
+            employees = employeeRepository.findByJobTitleContainingIgnoreCase(jobTitle);
+        } else {
+            employees = Collections.emptyList();
+        }
+
+        return employees.stream()
+                .map(employeeMapper::toRequest)
+                .collect(Collectors.toList());
+    }
+
+    public List<EmployeeRequest> filterEmployees(String department, String employmentStatus, LocalDate hireDate) {
+        List<Employee> employees = employeeRepository.filterEmployees(department, employmentStatus, hireDate);
+
+        return employees.stream()
+                .map(employeeMapper::toRequest)
+                .collect(Collectors.toList());
     }
 }
