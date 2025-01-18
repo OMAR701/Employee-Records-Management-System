@@ -14,7 +14,7 @@ spring:
     database-platform: org.hibernate.dialect.OracleDialect
     hibernate:
       ddl-auto: create-drop
-    defer-datasource-initialization: true # Ensure data.sql runs after schema creation
+    defer-datasource-initialization: true
     show-sql: true
   security:
     roles:

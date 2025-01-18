@@ -84,13 +84,23 @@ public class EmployeeService {
     }
 
 
-    public List<EmployeeRequest> searchEmployees(String name, String jobTitle) {
+    public List<EmployeeRequest> searchEmployees(Integer id, String name, String department, String jobTitle) {
         List<Employee> employees;
 
-        if (name != null && jobTitle != null) {
+        if (id != null) {
+            employees = employeeRepository.findById(id).stream().toList();
+        } else if (name != null && department != null && jobTitle != null) {
+            employees = employeeRepository.findByFullNameContainingIgnoreCaseAndDepartmentContainingIgnoreCaseAndJobTitleContainingIgnoreCase(name, department, jobTitle);
+        } else if (name != null && department != null) {
+            employees = employeeRepository.findByFullNameContainingIgnoreCaseAndDepartmentContainingIgnoreCase(name, department);
+        } else if (name != null && jobTitle != null) {
             employees = employeeRepository.findByFullNameContainingIgnoreCaseAndJobTitleContainingIgnoreCase(name, jobTitle);
+        } else if (department != null && jobTitle != null) {
+            employees = employeeRepository.findByDepartmentContainingIgnoreCaseAndJobTitleContainingIgnoreCase(department, jobTitle);
         } else if (name != null) {
             employees = employeeRepository.findByFullNameContainingIgnoreCase(name);
+        } else if (department != null) {
+            employees = employeeRepository.findByDepartmentContainingIgnoreCase(department);
         } else if (jobTitle != null) {
             employees = employeeRepository.findByJobTitleContainingIgnoreCase(jobTitle);
         } else {
@@ -101,6 +111,7 @@ public class EmployeeService {
                 .map(employeeMapper::toRequest)
                 .collect(Collectors.toList());
     }
+
 
     public List<EmployeeRequest> filterEmployees(String department, String employmentStatus, LocalDate hireDate) {
         List<Employee> employees = employeeRepository.filterEmployees(department, employmentStatus, hireDate);

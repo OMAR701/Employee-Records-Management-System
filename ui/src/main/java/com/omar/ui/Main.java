@@ -1,7 +1,7 @@
-package com.omar;
+package com.omar.ui;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        new LoginUI().setVisible(true);
     }
 }

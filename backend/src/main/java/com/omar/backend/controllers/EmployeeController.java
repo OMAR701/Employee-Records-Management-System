@@ -59,21 +59,24 @@ public class EmployeeController {
     @Operation(summary = "Delete Employee", description = "Delete an employee by ID. Only accessible to HR.")
     @PreAuthorize("hasAuthority('ROLE_HR')")
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteEmployee(@PathVariable Integer id) {
+    public ResponseEntity<Integer> deleteEmployee(@PathVariable Integer id) {
         employeeService.deleteEmployee(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(id);
     }
 
-    @Operation(summary = "Search employees by name or job title", description = "Allows searching employees by full name or job title.")
+    @Operation(summary = "Search employees", description = "Allows searching employees by name, ID, department, or job title.")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER')")
     @GetMapping("/search")
     public ResponseEntity<List<EmployeeRequest>> searchEmployees(
+            @RequestParam(required = false) Integer id,
             @RequestParam(required = false) String name,
+            @RequestParam(required = false) String department,
             @RequestParam(required = false) String jobTitle
     ) {
-        List<EmployeeRequest> employees = employeeService.searchEmployees(name, jobTitle);
+        List<EmployeeRequest> employees = employeeService.searchEmployees(id, name, department, jobTitle);
         return ResponseEntity.ok(employees);
     }
+
 
     @Operation(summary = "Filter employees", description = "Filter employees by department, employment status, or hire date.")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER')")
