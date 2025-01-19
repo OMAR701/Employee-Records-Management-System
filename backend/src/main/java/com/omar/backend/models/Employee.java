@@ -1,11 +1,13 @@
 package com.omar.backend.models;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @Getter
@@ -32,5 +34,28 @@ public class Employee {
     private String contactInfo;
     private String address;
 
+    @Column(updatable = false)
+    @JsonIgnore
+    private String createdBy;
+
+    @Column(updatable = false)
+    @JsonIgnore
+    private LocalDateTime createdAt;
+
+    @JsonIgnore
+    private String updatedBy;
+
+    @JsonIgnore
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
 }

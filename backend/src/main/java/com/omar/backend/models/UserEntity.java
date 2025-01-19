@@ -14,18 +14,24 @@ import java.util.Set;
 @Builder
 public class UserEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String username;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-    @Column(nullable = false)
-    private String password;
+        @Column(nullable = false, unique = true)
+        private String username;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "role")
-    private Set<String> roles;
-}
+        @Column(nullable = false)
+        private String password;
+
+        @ElementCollection(fetch = FetchType.EAGER)
+        @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+        @Column(name = "role")
+        private Set<String> roles;
+
+        @Column(nullable = true)
+        private String department;
+    }
+
+

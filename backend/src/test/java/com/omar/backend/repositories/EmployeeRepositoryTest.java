@@ -25,8 +25,8 @@ public class EmployeeRepositoryTest {
 
     @BeforeEach
     public void setup() {
-        Employee employee1 = new Employee(null, "John Doe", "Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street");
-        Employee employee2 = new Employee(null, "Jane Smith", "Manager", "HR", LocalDate.now(), "Part-time", "jane.smith@example.com", "456 Avenue");
+        Employee employee1 = new Employee();
+        Employee employee2 = new Employee();
 
         employeeRepository.save(employee1);
         employeeRepository.save(employee2);

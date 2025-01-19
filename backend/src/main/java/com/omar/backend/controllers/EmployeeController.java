@@ -2,7 +2,9 @@ package com.omar.backend.controllers;
 
 import com.omar.backend.dto.EmployeeRequest;
 import com.omar.backend.models.Employee;
+import com.omar.backend.models.UserEntity;
 import com.omar.backend.services.EmployeeService;
+import com.omar.backend.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,9 +21,11 @@ import java.util.List;
 public class EmployeeController {
 
     private final EmployeeService employeeService;
+    private final UserService userService;
 
-    public EmployeeController(EmployeeService employeeService) {
+    public EmployeeController(EmployeeService employeeService, UserService userService) {
         this.employeeService = employeeService;
+        this.userService = userService;
     }
 
     @Operation(summary = "Create a new employee", description = "Allows admin to create a new employee")
@@ -36,7 +40,7 @@ public class EmployeeController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER')")
     @GetMapping("/list")
     public ResponseEntity<List<EmployeeRequest>> getAllEmployees() {
-        List<EmployeeRequest> employees = employeeService.getAllEmployees();
+        List<EmployeeRequest> employees = employeeService.getEmployeesForCurrentUser();
         return ResponseEntity.ok(employees);
     }
 
@@ -52,6 +56,14 @@ public class EmployeeController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER')")
     @PutMapping("/update/{id}")
     public ResponseEntity<Employee> updateEmployee(@PathVariable Integer id, @Valid @RequestBody EmployeeRequest request) {
+        UserEntity currentUser = userService.getCurrentUser();
+
+        if (currentUser.getRoles().contains("ROLE_MANAGER")) {
+            if (!currentUser.getDepartment().equals(request.department())) {
+                throw new RuntimeException("Managers can only update employees within their department.");
+            }
+        }
+
         Employee updatedEmployee = employeeService.updateEmployee(id, request);
         return ResponseEntity.ok(updatedEmployee);
     }
@@ -76,7 +88,6 @@ public class EmployeeController {
         List<EmployeeRequest> employees = employeeService.searchEmployees(id, name, department, jobTitle);
         return ResponseEntity.ok(employees);
     }
-
 
     @Operation(summary = "Filter employees", description = "Filter employees by department, employment status, or hire date.")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER')")

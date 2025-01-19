@@ -1,14 +1,14 @@
 
 
 -- Insert users
-INSERT INTO users (id, username, password)
-VALUES (1, 'admin', '$2a$10$egsLaUVYqh8BARpsCv0Zr.dydDfVKaC2eaMgsse5R2g7wCKLyUmwq');
+INSERT INTO users (id, username, password, department)
+VALUES (1, 'admin', '$2a$10$egsLaUVYqh8BARpsCv0Zr.dydDfVKaC2eaMgsse5R2g7wCKLyUmwq','ADMINISTRATION');
 
-INSERT INTO users (id, username, password)
-VALUES (2, 'hr', '$2a$10$9.GnZrE961mCRW2ztqvLB.H2dsDJtaJV1DJsICTtZRfYP4ryBu04u');
+INSERT INTO users (id, username, password, department)
+VALUES (2, 'hr', '$2a$10$9.GnZrE961mCRW2ztqvLB.H2dsDJtaJV1DJsICTtZRfYP4ryBu04u','HR');
 
-INSERT INTO users (id, username, password)
-VALUES (3, 'manager', '$2a$10$czZtbMBErkpwV4Kb0lbbSuGXxqCh3q3hKkmTlpTAEgWfbEt2qqlA6');
+INSERT INTO users (id, username, password, department)
+VALUES (3, 'manager', '$2a$10$czZtbMBErkpwV4Kb0lbbSuGXxqCh3q3hKkmTlpTAEgWfbEt2qqlA6','IT');
 
 -- Insert user roles
 INSERT INTO user_roles (user_id, role)

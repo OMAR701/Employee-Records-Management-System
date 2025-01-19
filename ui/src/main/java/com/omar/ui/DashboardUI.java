@@ -5,6 +5,7 @@ import com.omar.models.Employee;
 import com.omar.utils.AuthTokenHolder;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -79,6 +80,7 @@ public class DashboardUI extends JFrame {
                     .getImage()
                     .getScaledInstance(150, 60, Image.SCALE_SMOOTH));
             logoLabel.setIcon(logoIcon);
+            logoLabel.setBorder(BorderFactory.createEmptyBorder(35, 30, 0, 0));
         } else {
             System.err.println("Logo not found: /images/logo.png");
         }
@@ -87,10 +89,10 @@ public class DashboardUI extends JFrame {
 
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
         searchPanel.setBackground(new Color(0, 120, 160));
-        nameField = new JTextField(10);
-        idField = new JTextField(5);
-        departmentField = new JTextField(10);
-        jobTitleField = new JTextField(10);
+        nameField = createStyledTextField();
+        idField = createStyledTextField();
+        departmentField = createStyledTextField();
+        jobTitleField = createStyledTextField();
         searchButton = createStyledButton("Search", "/icons/search.png");
 
         searchPanel.add(new JLabel("Name:"));
@@ -183,12 +185,23 @@ public class DashboardUI extends JFrame {
             }
 
             employeeTable.setModel(model);
+            employeeTable.setDefaultRenderer(Object.class, new CustomTableCellRenderer());
+
         } catch (Exception ex) {
             handleException(ex);
         }
     }
 
     private void addEmployee(ActionEvent e) {
+        JDialog dialog = new JDialog(this, "Add Employee", true);
+        dialog.setLayout(new GridBagLayout());
+        dialog.setSize(400, 500);
+        dialog.setLocationRelativeTo(this);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
         JTextField nameField = new JTextField();
         JTextField jobTitleField = new JTextField();
         JTextField departmentField = new JTextField();
@@ -197,18 +210,40 @@ public class DashboardUI extends JFrame {
         JTextField contactInfoField = new JTextField();
         JTextField addressField = new JTextField();
 
-        Object[] fields = {
-                "Name:", nameField,
-                "Job Title:", jobTitleField,
-                "Department:", departmentField,
-                "Hire Date (yyyy-MM-dd):", hireDateField,
-                "Employment Status:", employmentStatusField,
-                "Contact Info:", contactInfoField,
-                "Address:", addressField
-        };
+        String[] labels = {"Name:", "Job Title:", "Department:", "Hire Date (yyyy-MM-dd):",
+                "Employment Status:", "Contact Info:", "Address:"};
+        JTextField[] fields = {nameField, jobTitleField, departmentField, hireDateField,
+                employmentStatusField, contactInfoField, addressField};
 
-        int result = JOptionPane.showConfirmDialog(this, fields, "Add Employee", JOptionPane.OK_CANCEL_OPTION);
-        if (result == JOptionPane.OK_OPTION) {
+        for (int i = 0; i < labels.length; i++) {
+            gbc.gridx = 0;
+            gbc.gridy = i;
+            gbc.weightx = 0.3;
+            dialog.add(new JLabel(labels[i]), gbc);
+
+            gbc.gridx = 1;
+            gbc.weightx = 0.7;
+            dialog.add(fields[i], gbc);
+        }
+
+        JButton addButton = new JButton("Add");
+        addButton.setBackground(new Color(0, 120, 160));
+        addButton.setForeground(Color.WHITE);
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.setBackground(Color.GRAY);
+        cancelButton.setForeground(Color.WHITE);
+
+        gbc.gridx = 0;
+        gbc.gridy = labels.length;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(addButton);
+        buttonPanel.add(cancelButton);
+        dialog.add(buttonPanel, gbc);
+
+        addButton.addActionListener(event -> {
             try {
                 Employee newEmployee = new Employee();
                 newEmployee.setFullName(nameField.getText());
@@ -221,69 +256,129 @@ public class DashboardUI extends JFrame {
 
                 ApiClient.addEmployee(AuthTokenHolder.getToken(), newEmployee);
                 refreshTableData();
-                JOptionPane.showMessageDialog(this, "Employee added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                showNotification("Employee added successfully!", true, false);
+                dialog.dispose();
             } catch (Exception ex) {
-                if (ex.getMessage().contains("permission")) {
-                    JOptionPane.showMessageDialog(this, "You don't have permission to add an employee.", "Permission Denied", JOptionPane.WARNING_MESSAGE);
+                if (ex.getMessage().contains("403")) {
+                    showNotification("You don't have permission to add an employee.", false, true);
                 } else {
-                    JOptionPane.showMessageDialog(this, "Error adding employee: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    showNotification("Error adding employee: " + ex.getMessage(), false, false);
                 }
             }
-        }
+        });
+
+
+        cancelButton.addActionListener(event -> dialog.dispose());
+
+        dialog.setVisible(true);
     }
 
     private void editEmployee(ActionEvent e) {
         int selectedRow = employeeTable.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Select an employee first!", "Error", JOptionPane.ERROR_MESSAGE);
+            showNotification("Select an employee first!", false,false);
             return;
         }
 
         int id = (int) employeeTable.getValueAt(selectedRow, 0);
-        JTextField nameField = new JTextField((String) employeeTable.getValueAt(selectedRow, 1));
-        JTextField jobTitleField = new JTextField((String) employeeTable.getValueAt(selectedRow, 2));
-        JTextField departmentField = new JTextField((String) employeeTable.getValueAt(selectedRow, 3));
-        JTextField hireDateField = new JTextField();
-        JTextField employmentStatusField = new JTextField();
-        JTextField contactInfoField = new JTextField();
-        JTextField addressField = new JTextField();
 
-        Object[] fields = {
-                "Name:", nameField,
-                "Job Title:", jobTitleField,
-                "Department:", departmentField,
-                "Hire Date (yyyy-MM-dd):", hireDateField,
-                "Employment Status:", employmentStatusField,
-                "Contact Info:", contactInfoField,
-                "Address:", addressField
-        };
+        try {
+            Employee existingEmployee = ApiClient.getEmployeeById(AuthTokenHolder.getToken(), id);
 
-        int result = JOptionPane.showConfirmDialog(this, fields, "Edit Employee", JOptionPane.OK_CANCEL_OPTION);
-        if (result == JOptionPane.OK_OPTION) {
-            try {
-                Employee updatedEmployee = new Employee();
-                updatedEmployee.setId(id);
-                updatedEmployee.setFullName(nameField.getText());
-                updatedEmployee.setJobTitle(jobTitleField.getText());
-                updatedEmployee.setDepartment(departmentField.getText());
-                updatedEmployee.setHireDate(LocalDate.parse(hireDateField.getText()).toString());
-                updatedEmployee.setEmploymentStatus(employmentStatusField.getText());
-                updatedEmployee.setContactInfo(contactInfoField.getText());
-                updatedEmployee.setAddress(addressField.getText());
+            JDialog dialog = new JDialog(this, "Edit Employee", true);
+            dialog.setLayout(new GridBagLayout());
+            dialog.setSize(400, 500);
+            dialog.setLocationRelativeTo(this);
 
-                ApiClient.updateEmployee(AuthTokenHolder.getToken(), id, updatedEmployee);
-                refreshTableData();
-                JOptionPane.showMessageDialog(this, "Employee updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error updating employee: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+
+            JTextField nameField = new JTextField(existingEmployee.getFullName());
+            JTextField jobTitleField = new JTextField(existingEmployee.getJobTitle());
+            JTextField departmentField = new JTextField(existingEmployee.getDepartment());
+            JTextField hireDateField = new JTextField(existingEmployee.getHireDate());
+            JTextField employmentStatusField = new JTextField(existingEmployee.getEmploymentStatus());
+            JTextField contactInfoField = new JTextField(existingEmployee.getContactInfo());
+            JTextField addressField = new JTextField(existingEmployee.getAddress());
+
+            String[] labels = {
+                    "Name:", "Job Title:", "Department:", "Hire Date (yyyy-MM-dd):",
+                    "Employment Status:", "Contact Info:", "Address:"
+            };
+            JTextField[] fields = {
+                    nameField, jobTitleField, departmentField, hireDateField,
+                    employmentStatusField, contactInfoField, addressField
+            };
+
+            for (int i = 0; i < labels.length; i++) {
+                gbc.gridx = 0;
+                gbc.gridy = i;
+                gbc.weightx = 0.3;
+                dialog.add(new JLabel(labels[i]), gbc);
+
+                gbc.gridx = 1;
+                gbc.weightx = 0.7;
+                dialog.add(fields[i], gbc);
             }
+
+            JButton saveButton = new JButton("Save");
+            saveButton.setBackground(new Color(0, 120, 160));
+            saveButton.setForeground(Color.WHITE);
+            JButton cancelButton = new JButton("Cancel");
+            cancelButton.setBackground(Color.GRAY);
+            cancelButton.setForeground(Color.WHITE);
+
+            gbc.gridx = 0;
+            gbc.gridy = labels.length;
+            gbc.gridwidth = 2;
+            gbc.anchor = GridBagConstraints.CENTER;
+
+            JPanel buttonPanel = new JPanel();
+            buttonPanel.add(saveButton);
+            buttonPanel.add(cancelButton);
+            dialog.add(buttonPanel, gbc);
+
+            saveButton.addActionListener(event -> {
+                try {
+                    Employee updatedEmployee = new Employee();
+                    updatedEmployee.setId(id);
+                    updatedEmployee.setFullName(nameField.getText());
+                    updatedEmployee.setJobTitle(jobTitleField.getText());
+                    updatedEmployee.setDepartment(departmentField.getText());
+                    updatedEmployee.setHireDate(LocalDate.parse(hireDateField.getText()).toString());
+                    updatedEmployee.setEmploymentStatus(employmentStatusField.getText());
+                    updatedEmployee.setContactInfo(contactInfoField.getText());
+                    updatedEmployee.setAddress(addressField.getText());
+
+                    ApiClient.updateEmployee(AuthTokenHolder.getToken(), id, updatedEmployee);
+                    refreshTableData();
+                    showNotification("Employee updated successfully!", true, false);
+                    dialog.dispose();
+                } catch (Exception ex) {
+                    if (ex.getMessage().contains("403")) {
+                        showNotification("You don't have permission to update this employee.", false, true);
+                    } else {
+                        showNotification("Error updating employee: " + ex.getMessage(), false, false);
+                    }
+                }
+            });
+
+
+            cancelButton.addActionListener(event -> dialog.dispose());
+
+            dialog.setVisible(true);
+
+        } catch (Exception ex) {
+            showNotification("Error fetching employee details: " + ex.getMessage(), false, false);
         }
     }
+
 
     private void deleteEmployee(ActionEvent e) {
         int selectedRow = employeeTable.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Select an employee first!", "Error", JOptionPane.ERROR_MESSAGE);
+            showNotification("Select an employee first!", false, false);
             return;
         }
 
@@ -291,12 +386,12 @@ public class DashboardUI extends JFrame {
         try {
             int deletedId = ApiClient.deleteEmployee(AuthTokenHolder.getToken(), id);
             refreshTableData();
-            JOptionPane.showMessageDialog(this, "Employee with ID " + deletedId + " deleted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            showNotification("Employee with ID " + deletedId + " deleted successfully!", true, false);
         } catch (Exception ex) {
-            if (ex.getMessage().contains("permission")) {
-                JOptionPane.showMessageDialog(this, "You don't have permission to delete this employee.", "Permission Denied", JOptionPane.WARNING_MESSAGE);
+            if (ex.getMessage().contains("403")) {
+                showNotification("You don't have permission to delete this employee.", false, true);
             } else {
-                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                showNotification(" " + ex.getMessage(), false, false);
             }
         }
     }
@@ -332,9 +427,120 @@ public class DashboardUI extends JFrame {
 
     private void handleException(Exception ex) {
         if (ex.getMessage().contains("403")) {
-            JOptionPane.showMessageDialog(this, "You don't have permission to perform this action.", "Permission Denied", JOptionPane.WARNING_MESSAGE);
+            showNotification("You don't have permission to perform this action.", false, true);
         } else {
-            JOptionPane.showMessageDialog(this, "An error occurred: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            showNotification("An error occurred: " + ex.getMessage(), false, false);
         }
     }
+
+    private static class CustomTableCellRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            if (isSelected) {
+                component.setBackground(new Color(0, 100, 140));
+                component.setForeground(Color.WHITE);
+            } else if (row % 2 == 0) {
+                component.setBackground(new Color(220, 240, 250));
+                component.setForeground(Color.BLACK);
+            } else {
+                component.setBackground(new Color(200, 220, 230));
+                component.setForeground(Color.BLACK);
+            }
+
+            component.setFont(new Font("Arial", Font.PLAIN, 12));
+
+            return component;
+        }
+    }
+
+    private JTextField createStyledTextField() {
+        JTextField textField = new JTextField();
+        textField.setPreferredSize(new Dimension(100, 30));
+        textField.setFont(new Font("Arial", Font.PLAIN, 12));
+        return textField;
+    }
+
+    private void showNotification(String message, boolean success, boolean permissionError) {
+        JDialog notification = new JDialog(this, "Notification", true);
+        notification.setUndecorated(true);
+        notification.setSize(350, 200);
+        notification.setLocationRelativeTo(this);
+        notification.setLayout(new BorderLayout());
+
+        JPanel outerPanel = new JPanel(new BorderLayout());
+        outerPanel.setBackground(Color.WHITE);
+
+        Color borderColor = success ? new Color(0, 200, 100)
+                : permissionError ? new Color(255, 165, 0)
+                : new Color(200, 50, 50);
+        outerPanel.setBorder(BorderFactory.createLineBorder(borderColor, 4));
+
+        JLabel iconLabel = new JLabel();
+        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+        String iconPath = success
+                ? "/icons/success.png"
+                : permissionError
+                ? "/icons/access-denied.png"
+                : "/icons/error.png";
+        URL iconResource = getClass().getResource(iconPath);
+        if (iconResource != null) {
+            iconLabel.setIcon(new ImageIcon(
+                    new ImageIcon(iconResource)
+                            .getImage()
+                            .getScaledInstance(60, 60, Image.SCALE_SMOOTH)
+            ));
+        } else {
+            System.err.println("Icon not found: " + iconPath);
+            iconLabel.setText(success ? "✓" : "!");
+            iconLabel.setFont(new Font("Arial", Font.BOLD, 48));
+            iconLabel.setForeground(borderColor);
+        }
+
+        JLabel messageLabel = new JLabel(message, SwingConstants.CENTER);
+        messageLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        messageLabel.setForeground(borderColor);
+        messageLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JButton closeButton = new JButton("OK");
+        closeButton.setBackground(borderColor);
+        closeButton.setForeground(Color.WHITE);
+        closeButton.setFont(new Font("Arial", Font.BOLD, 14));
+        closeButton.setFocusPainted(false);
+        closeButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        closeButton.addActionListener(e -> notification.dispose());
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(Color.WHITE);
+        buttonPanel.add(closeButton);
+
+        outerPanel.add(iconLabel, BorderLayout.NORTH);
+        outerPanel.add(messageLabel, BorderLayout.CENTER);
+        outerPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        notification.add(outerPanel);
+
+        Timer fadeInTimer = new Timer(10, new AbstractAction() {
+            float opacity = 0.0f;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                opacity += 0.05f;
+                if (opacity > 1.0f) {
+                    opacity = 1.0f;
+                    ((Timer) e.getSource()).stop();
+                }
+                notification.setOpacity(opacity);
+            }
+        });
+        fadeInTimer.start();
+
+        notification.setOpacity(0.0f);
+        notification.setVisible(true);
+    }
+
+
+
 }

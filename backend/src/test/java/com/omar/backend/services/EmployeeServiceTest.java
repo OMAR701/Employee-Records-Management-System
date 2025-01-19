@@ -41,7 +41,7 @@ public class EmployeeServiceTest {
     @Test
     public void testCreateEmployee() {
         EmployeeRequest request = new EmployeeRequest(null, "John Doe", "Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street");
-        Employee employee = new Employee(null, "John Doe", "Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street");
+        Employee employee = new Employee();
 
         when(employeeMapper.toEntity(request)).thenReturn(employee);
         when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
@@ -57,8 +57,8 @@ public class EmployeeServiceTest {
 
     @Test
     public void testGetAllEmployees() {
-        Employee employee1 = new Employee(null, "John Doe", "Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street");
-        Employee employee2 = new Employee(null, "Jane Smith", "Manager", "HR", LocalDate.now(), "Part-time", "jane.smith@example.com", "456 Avenue");
+        Employee employee1 = new Employee();
+        Employee employee2 = new Employee();
 
         when(employeeRepository.findAll()).thenReturn(Arrays.asList(employee1, employee2));
         when(employeeMapper.toRequest(employee1)).thenReturn(new EmployeeRequest(null, "John Doe", "Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street"));
@@ -74,7 +74,7 @@ public class EmployeeServiceTest {
 
     @Test
     public void testGetEmployeeById() {
-        Employee employee = new Employee(1, "John Doe", "Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street");
+        Employee employee = new Employee();
 
         when(employeeRepository.findById(1)).thenReturn(Optional.of(employee));
         when(employeeMapper.toRequest(employee)).thenReturn(new EmployeeRequest(null, "John Doe", "Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street"));
@@ -88,9 +88,9 @@ public class EmployeeServiceTest {
 
     @Test
     public void testUpdateEmployee() {
-        Employee existingEmployee = new Employee(null, "John Doe", "Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street");
+        Employee existingEmployee = new Employee();
         EmployeeRequest updatedRequest = new EmployeeRequest(null, "John Doe Updated", "Senior Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street");
-        Employee updatedEmployee = new Employee(null, "John Doe Updated", "Senior Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street");
+        Employee updatedEmployee = new Employee();
 
         when(employeeRepository.findById(1)).thenReturn(Optional.of(existingEmployee));
         when(employeeMapper.toEntity(updatedRequest)).thenReturn(updatedEmployee);
@@ -107,7 +107,7 @@ public class EmployeeServiceTest {
 
     @Test
     public void testDeleteEmployee() {
-        Employee employee = new Employee(null, "John Doe", "Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street");
+        Employee employee = new Employee();
 
         when(employeeRepository.findById(1)).thenReturn(Optional.of(employee));
         doNothing().when(employeeRepository).delete(employee);

@@ -6,82 +6,157 @@ import com.omar.utils.AuthTokenHolder;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class LoginUI extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton;
-    private JLabel messageLabel;
 
     public LoginUI() {
         setTitle("Login");
-        setSize(400, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setUndecorated(true);
         initComponents();
     }
 
     private void initComponents() {
-        JPanel panel = new JPanel(new GridBagLayout());
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(new Color(0, 120, 160));
+
+        // Center Panel
+        JPanel centerPanel = new JPanel(new GridBagLayout());
+        centerPanel.setBackground(new Color(0, 120, 160));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(20, 20, 20, 20);
+        gbc.fill = GridBagConstraints.BOTH;
+
+        // Logo Panel
+        JPanel logoPanel = new JPanel();
+        logoPanel.setBackground(new Color(0, 120, 160));
+        JLabel logoLabel = new JLabel();
+        ImageIcon logoIcon = new ImageIcon(new ImageIcon(getClass().getResource("/images/logo.png"))
+                .getImage().getScaledInstance(200, 100, Image.SCALE_SMOOTH));
+        logoLabel.setIcon(logoIcon);
+        logoPanel.add(logoLabel);
+
+        // Form Panel
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBackground(new Color(0, 120, 160));
+        GridBagConstraints formGbc = new GridBagConstraints();
+        formGbc.insets = new Insets(10, 10, 10, 10);
+        formGbc.fill = GridBagConstraints.HORIZONTAL;
 
         JLabel usernameLabel = new JLabel("Username:");
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        panel.add(usernameLabel, gbc);
+        usernameLabel.setForeground(Color.WHITE);
+        usernameLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        formGbc.gridx = 0;
+        formGbc.gridy = 0;
+        formPanel.add(usernameLabel, formGbc);
 
         usernameField = new JTextField(20);
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        panel.add(usernameField, gbc);
+        formGbc.gridx = 1;
+        formPanel.add(usernameField, formGbc);
 
         JLabel passwordLabel = new JLabel("Password:");
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        panel.add(passwordLabel, gbc);
+        passwordLabel.setForeground(Color.WHITE);
+        passwordLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        formGbc.gridx = 0;
+        formGbc.gridy = 1;
+        formPanel.add(passwordLabel, formGbc);
 
         passwordField = new JPasswordField(20);
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        panel.add(passwordField, gbc);
+        formGbc.gridx = 1;
+        formPanel.add(passwordField, formGbc);
 
         loginButton = new JButton("Login");
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        panel.add(loginButton, gbc);
+        loginButton.setBackground(new Color(0, 200, 100));
+        loginButton.setForeground(Color.WHITE);
+        loginButton.setFont(new Font("Arial", Font.BOLD, 14));
+        loginButton.setFocusPainted(false);
+        formGbc.gridx = 1;
+        formGbc.gridy = 2;
+        formGbc.anchor = GridBagConstraints.CENTER;
+        formPanel.add(loginButton, formGbc);
 
-        messageLabel = new JLabel("", SwingConstants.CENTER);
+        // Add Action Listener for Login Button
+        loginButton.addActionListener(this::handleLogin);
+
+        // Add Logo and Form Side by Side
         gbc.gridx = 0;
-        gbc.gridy = 3;
-        gbc.gridwidth = 2;
-        panel.add(messageLabel, gbc);
+        gbc.gridy = 0;
+        gbc.weightx = 0.3;
+        centerPanel.add(logoPanel, gbc);
 
-        loginButton.addActionListener(new LoginActionListener());
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
+        centerPanel.add(formPanel, gbc);
 
-        add(panel);
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
+
+        add(mainPanel);
     }
 
-    private class LoginActionListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String username = usernameField.getText();
-            String password = new String(passwordField.getPassword());
+    private void handleLogin(ActionEvent e) {
+        String username = usernameField.getText();
+        String password = new String(passwordField.getPassword());
 
-            try {
-                String token = ApiClient.login(username, password);
-                AuthTokenHolder.setToken(token);
-                JOptionPane.showMessageDialog(LoginUI.this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                System.out.println("Token in login: " + AuthTokenHolder.getToken());
+        try {
+            String token = ApiClient.login(username, password);
+            AuthTokenHolder.setToken(token);
 
-                new DashboardUI().setVisible(true);
-                dispose();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(LoginUI.this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            new DashboardUI().setVisible(true);
+            dispose();
+        } catch (Exception ex) {
+            showNotification("Username or password incorrect", false);
         }
+    }
+
+    private void showNotification(String message, boolean success) {
+        JDialog notification = new JDialog(this, "Notification", true);
+        notification.setUndecorated(true);
+        notification.setSize(350, 200);
+        notification.setLocationRelativeTo(this);
+        notification.setLayout(new BorderLayout());
+
+        JPanel outerPanel = new JPanel(new BorderLayout());
+        outerPanel.setBackground(Color.WHITE);
+        outerPanel.setBorder(BorderFactory.createLineBorder(success ? new Color(0, 200, 100) : new Color(200, 50, 50), 4));
+
+        JLabel iconLabel = new JLabel();
+        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        if (success) {
+            iconLabel.setIcon(new ImageIcon(new ImageIcon(getClass().getResource("/icons/success.png"))
+                    .getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH)));
+        } else {
+            iconLabel.setIcon(new ImageIcon(new ImageIcon(getClass().getResource("/icons/error.png"))
+                    .getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH)));
+        }
+
+        JLabel messageLabel = new JLabel(message, SwingConstants.CENTER);
+        messageLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        messageLabel.setForeground(success ? new Color(0, 150, 80) : new Color(200, 50, 50));
+        messageLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JButton closeButton = new JButton("OK");
+        closeButton.setBackground(success ? new Color(0, 200, 100) : new Color(200, 50, 50));
+        closeButton.setForeground(Color.WHITE);
+        closeButton.setFont(new Font("Arial", Font.BOLD, 14));
+        closeButton.setFocusPainted(false);
+        closeButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        closeButton.addActionListener(event -> notification.dispose());
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(Color.WHITE);
+        buttonPanel.add(closeButton);
+
+        outerPanel.add(iconLabel, BorderLayout.NORTH);
+        outerPanel.add(messageLabel, BorderLayout.CENTER);
+        outerPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        notification.add(outerPanel);
+
+        notification.setVisible(true);
     }
 
     public static void main(String[] args) {

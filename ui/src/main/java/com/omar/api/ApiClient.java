@@ -134,31 +134,40 @@ public class ApiClient {
     public static Employee updateEmployee(String token, int id, Employee employee) throws Exception {
         URL url = new URL(BASE_URL + "/employees/update/" + id);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("PUT");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setRequestProperty("Authorization", "Bearer " + token);
-        connection.setDoOutput(true);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonPayload = objectMapper.writeValueAsString(employee);
+        try {
+            connection.setRequestMethod("PUT");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Authorization", "Bearer " + token);
+            connection.setDoOutput(true);
 
-        try (OutputStream os = connection.getOutputStream()) {
-            os.write(jsonPayload.getBytes());
-            os.flush();
-        }
+            ObjectMapper objectMapper = new ObjectMapper();
+            String jsonPayload = objectMapper.writeValueAsString(employee);
 
-        int responseCode = connection.getResponseCode();
-        if (responseCode == 200) {
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = in.readLine()) != null) {
-                    response.append(line);
-                }
-                return objectMapper.readValue(response.toString(), Employee.class);
+            try (OutputStream os = connection.getOutputStream()) {
+                os.write(jsonPayload.getBytes());
+                os.flush();
             }
-        } else {
-            throw new Exception("Failed to update employee. Response code: " + responseCode);
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = in.readLine()) != null) {
+                        response.append(line);
+                    }
+                    return objectMapper.readValue(response.toString(), Employee.class);
+                }
+            } else if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                throw new Exception("Unauthorized: Invalid or expired token.");
+            } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                throw new Exception("Employee not found. ID: " + id);
+            } else {
+                throw new Exception("Failed to update employee. Response code: " + responseCode);
+            }
+        } finally {
+            connection.disconnect();
         }
     }
 
@@ -227,4 +236,37 @@ public class ApiClient {
             return new ArrayList<>();
         }
     }
+
+    public static Employee getEmployeeById(String token, int id) throws Exception {
+        URL url = new URL(BASE_URL + "/employees/details/" + id);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        try {
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Authorization", "Bearer " + token);
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = in.readLine()) != null) {
+                        response.append(line);
+                    }
+
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    return objectMapper.readValue(response.toString(), Employee.class);
+                }
+            } else if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                throw new Exception("Unauthorized: Invalid or expired token.");
+            } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                throw new Exception("Employee not found. ID: " + id);
+            } else {
+                throw new Exception("Failed to fetch employee. Response code: " + responseCode);
+            }
+        } finally {
+            connection.disconnect();
+        }
+    }
+
 }

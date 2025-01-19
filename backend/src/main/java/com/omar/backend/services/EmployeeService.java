@@ -4,6 +4,9 @@ package com.omar.backend.services;
 import com.omar.backend.dto.EmployeeRequest;
 import com.omar.backend.mapper.EmployeeMapper;
 import com.omar.backend.models.Employee;
+import com.omar.backend.models.EmployeeAudit;
+import com.omar.backend.models.UserEntity;
+import com.omar.backend.repositories.EmployeeAuditRepository;
 import com.omar.backend.repositories.EmployeeRepository;
 import com.omar.backend.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,16 +27,55 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
+    private final UserService userService;
+    private final EmployeeAuditRepository auditRepository;
 
-    public EmployeeService(EmployeeRepository employeeRepository, EmployeeMapper employeeMapper) {
+
+    public EmployeeService(EmployeeRepository employeeRepository, EmployeeMapper employeeMapper, UserService userService, EmployeeAuditRepository auditRepository) {
         this.employeeRepository = employeeRepository;
         this.employeeMapper = employeeMapper;
+        this.userService = userService;
+        this.auditRepository = auditRepository;
     }
 
     public Employee createEmployee(EmployeeRequest request) {
-        Employee employee = employeeMapper.toEntity(request);
+        UserEntity currentUser = userService.getCurrentUser();
+        String changes = "created new employee : ...";
+        Employee employee = Employee.builder()
+                .fullName(request.fullName())
+                .jobTitle(request.jobTitle())
+                .department(request.department())
+                .hireDate(request.hireDate())
+                .employmentStatus(request.employmentStatus())
+                .contactInfo(request.contactInfo())
+                .address(request.address())
+                .createdBy(currentUser.getUsername())
+                .build();
+
+        logAudit(employee.getEmployeeId(), "CREATED", currentUser.getUsername(), changes);
+
         return employeeRepository.save(employee);
     }
+
+
+    public List<EmployeeRequest> getEmployeesForCurrentUser() {
+        UserEntity currentUser = userService.getCurrentUser();
+
+        if (currentUser.getRoles().contains("MANAGER")) {
+            String managerDepartment = currentUser.getDepartment();
+            return getEmployeesByDepartment(managerDepartment);
+        }
+
+        return getAllEmployees();
+    }
+
+    public List<EmployeeRequest> getEmployeesByDepartment(String department) {
+        return employeeRepository.findByDepartment(department)
+                .stream()
+                .map(employeeMapper::toRequest)
+                .collect(Collectors.toList());
+    }
+
 
     public List<EmployeeRequest> getAllEmployees() {
         return employeeRepository.findAll()
@@ -43,31 +86,27 @@ public class EmployeeService {
 
     public Employee updateEmployee(Integer id, EmployeeRequest request) {
         Employee existingEmployee = employeeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        String role = UserUtils.getAuthenticatedUserRole();
-        String username = UserUtils.getAuthenticatedUsername();
-
-        if ("ROLE_MANAGER".equals(role)) {
-            if (!existingEmployee.getDepartment().equals(UserUtils.getUserDepartment(username))) {
-                throw new AccessDeniedException("Managers can only update employees in their department.");
-            }
-            existingEmployee.setJobTitle(request.jobTitle());
-            existingEmployee.setContactInfo(request.contactInfo());
-        } else if ("ROLE_HR".equals(role) || "ROLE_ADMIN".equals(role)) {
-            existingEmployee.setFullName(request.fullName());
-            existingEmployee.setJobTitle(request.jobTitle());
-            existingEmployee.setDepartment(request.department());
-            existingEmployee.setHireDate(request.hireDate());
-            existingEmployee.setEmploymentStatus(request.employmentStatus());
-            existingEmployee.setContactInfo(request.contactInfo());
-            existingEmployee.setAddress(request.address());
-        } else {
-            throw new AccessDeniedException("Access denied.");
+        UserEntity currentUser = userService.getCurrentUser();
+        String changes = "Updated fields: ...";
+        if (currentUser.getRoles().contains("ROLE_MANAGER") &&
+                !existingEmployee.getDepartment().equals(currentUser.getDepartment())) {
+            throw new AccessDeniedException("You do not have permission to update this employee.");
         }
 
+        existingEmployee.setFullName(request.fullName());
+        existingEmployee.setJobTitle(request.jobTitle());
+        existingEmployee.setDepartment(request.department());
+        existingEmployee.setHireDate(request.hireDate());
+        existingEmployee.setEmploymentStatus(request.employmentStatus());
+        existingEmployee.setContactInfo(request.contactInfo());
+        existingEmployee.setAddress(request.address());
+
+        logAudit(existingEmployee.getEmployeeId(), "UPDATE", currentUser.getUsername(), changes);
         return employeeRepository.save(existingEmployee);
     }
+
 
 
 
@@ -78,8 +117,13 @@ public class EmployeeService {
     }
 
     public void deleteEmployee(Integer id) {
+        UserEntity currentUser = userService.getCurrentUser();
+
+        String changes = "Delete Employee";
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + id));
+        logAudit(employee.getEmployeeId(), "Detele", currentUser.getUsername(), changes);
+
         employeeRepository.delete(employee);
     }
 
@@ -119,5 +163,18 @@ public class EmployeeService {
         return employees.stream()
                 .map(employeeMapper::toRequest)
                 .collect(Collectors.toList());
+    }
+
+
+    public void logAudit(Integer employeeId, String action, String performedBy, String changes) {
+        EmployeeAudit audit = EmployeeAudit.builder()
+                .employeeId(employeeId)
+                .action(action)
+                .performedBy(performedBy)
+                .performedAt(LocalDateTime.now())
+                .changes(changes)
+                .build();
+
+        auditRepository.save(audit);
     }
 }

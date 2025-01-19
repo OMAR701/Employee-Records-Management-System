@@ -53,7 +53,7 @@ public class EmployeeControllerTest {
     @Test
     public void testCreateEmployee() throws Exception {
         EmployeeRequest request = new EmployeeRequest(null, "John Doe", "Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street");
-        Employee response = new Employee(null, "John Doe", "Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street");
+        Employee response = new Employee();
 
         when(employeeService.createEmployee(any(EmployeeRequest.class))).thenReturn(response);
 
@@ -97,7 +97,7 @@ public class EmployeeControllerTest {
     @Test
     public void testUpdateEmployee() throws Exception {
         EmployeeRequest request = new EmployeeRequest(null, "John Doe Updated", "Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street");
-        Employee response = new Employee(null, "John Doe Updated", "Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street");
+        Employee response = new Employee();
 
         when(employeeService.updateEmployee(eq(1), any(EmployeeRequest.class))).thenReturn(response);
 
@@ -125,14 +125,14 @@ public class EmployeeControllerTest {
     public void testSearchEmployees() throws Exception {
         EmployeeRequest request = new EmployeeRequest(null, "John Doe", "Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street");
 
-        when(employeeService.searchEmployees("john", null)).thenReturn(Collections.singletonList(request));
+        when(employeeService.searchEmployees(1, null, null , null)).thenReturn(Collections.singletonList(request));
 
         mockMvc.perform(get("/api/v1/employees/search?name=john")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].fullName").value("John Doe"));
 
-        verify(employeeService, times(1)).searchEmployees("john", null);
+        verify(employeeService, times(1)).searchEmployees(null,null,null, null);
     }
 
     @Test

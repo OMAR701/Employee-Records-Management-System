@@ -3,8 +3,12 @@ package com.omar.backend.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import jakarta.validation.constraints.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
+
 
 @JsonInclude(Include.NON_EMPTY)
 public record EmployeeRequest(
