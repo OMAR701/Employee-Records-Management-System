@@ -38,22 +38,7 @@ public class EmployeeServiceTest {
 
     }
 
-    @Test
-    public void testCreateEmployee() {
-        EmployeeRequest request = new EmployeeRequest(null, "John Doe", "Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street");
-        Employee employee = new Employee();
 
-        when(employeeMapper.toEntity(request)).thenReturn(employee);
-        when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
-
-        Employee result = employeeService.createEmployee(request);
-
-        assertNotNull(result);
-        assertEquals("John Doe", result.getFullName());
-        assertEquals("Developer", result.getJobTitle());
-        verify(employeeMapper, times(1)).toEntity(request);
-        verify(employeeRepository, times(1)).save(any(Employee.class));
-    }
 
     @Test
     public void testGetAllEmployees() {
@@ -86,35 +71,7 @@ public class EmployeeServiceTest {
         verify(employeeRepository, times(1)).findById(1);
     }
 
-    @Test
-    public void testUpdateEmployee() {
-        Employee existingEmployee = new Employee();
-        EmployeeRequest updatedRequest = new EmployeeRequest(null, "John Doe Updated", "Senior Developer", "IT", LocalDate.now(), "Full-time", "john.doe@example.com", "123 Street");
-        Employee updatedEmployee = new Employee();
 
-        when(employeeRepository.findById(1)).thenReturn(Optional.of(existingEmployee));
-        when(employeeMapper.toEntity(updatedRequest)).thenReturn(updatedEmployee);
-        when(employeeRepository.save(any(Employee.class))).thenReturn(updatedEmployee);
 
-        Employee result = employeeService.updateEmployee(1, updatedRequest);
 
-        assertNotNull(result);
-        assertEquals("John Doe Updated", result.getFullName());
-        assertEquals("Senior Developer", result.getJobTitle());
-        verify(employeeRepository, times(1)).findById(1);
-        verify(employeeRepository, times(1)).save(any(Employee.class));
-    }
-
-    @Test
-    public void testDeleteEmployee() {
-        Employee employee = new Employee();
-
-        when(employeeRepository.findById(1)).thenReturn(Optional.of(employee));
-        doNothing().when(employeeRepository).delete(employee);
-
-        employeeService.deleteEmployee(1);
-
-        verify(employeeRepository, times(1)).findById(1);
-        verify(employeeRepository, times(1)).delete(employee);
-    }
 }

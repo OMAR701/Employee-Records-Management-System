@@ -31,11 +31,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api/v1/auth/login").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/v1/employees/create").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/employees/create").hasAnyAuthority("ROLE_ADMIN","ROLE_HR")
                         .requestMatchers(HttpMethod.GET, "/api/v1/employees/list").hasAnyAuthority("ROLE_ADMIN", "ROLE_HR", "ROLE_MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/employees/details/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_HR", "ROLE_MANAGER")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/employees/update/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_HR", "ROLE_MANAGER")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/employees/delete/**").hasAuthority("ROLE_HR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/employees/delete/**").hasAnyAuthority("ROLE_ADMIN","ROLE_HR")
 
                         .anyRequest().authenticated()
                 )
