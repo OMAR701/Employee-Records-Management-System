@@ -33,11 +33,9 @@ public class ApiClient {
         String url = BASE_URL + "/auth/login";
         URL loginUrl = new URL(url);
         HttpURLConnection connection = (HttpURLConnection) loginUrl.openConnection();
-
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
-
         String payload = String.format("{\"username\":\"%s\", \"password\":\"%s\"}", username, password);
 
         try (OutputStream os = connection.getOutputStream()) {
@@ -54,10 +52,8 @@ public class ApiClient {
                 response.append(line);
             }
             in.close();
-
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Object> responseMap = objectMapper.readValue(response.toString(), Map.class);
-
             String token = (String) responseMap.get("token");
             if (token != null && !token.isEmpty()) {
                 return token;

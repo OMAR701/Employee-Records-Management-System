@@ -9,6 +9,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.context.annotation.Profile;
 
+
+// Purpose: This class is used to load user details from a database (via UserRepository).
 @Profile("!test")
 @Service
 public class CustomUserDetailsService implements UserDetailsService {

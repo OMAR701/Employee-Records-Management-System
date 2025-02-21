@@ -1,5 +1,3 @@
-
-
 -- Insert users
 INSERT INTO users (id, username, password, department)
 VALUES (1, 'admin', '$2a$10$egsLaUVYqh8BARpsCv0Zr.dydDfVKaC2eaMgsse5R2g7wCKLyUmwq','ADMINISTRATION');
@@ -22,13 +20,13 @@ VALUES (3, 'MANAGER');
 
 -- Insert employees
 INSERT INTO employees (employee_id, full_name, job_title, department, hire_date, employment_status, contact_info, address)
-VALUES (employees_seq.NEXTVAL, 'John Doe', 'Developer', 'IT', TO_DATE('2022-01-15', 'YYYY-MM-DD'), 'Full-time', 'john.doe@example.com', '123 Main St');
+VALUES (DEFAULT, 'John Doe', 'Developer', 'IT', TO_DATE('2022-01-15', 'YYYY-MM-DD'), 'Full-time', 'john.doe@example.com', '123 Main St');
 
 INSERT INTO employees (employee_id, full_name, job_title, department, hire_date, employment_status, contact_info, address)
-VALUES (employees_seq.NEXTVAL, 'Jane Smith', 'Manager', 'HR', TO_DATE('2021-12-01', 'YYYY-MM-DD'), 'Part-time', 'jane.smith@example.com', '456 Maple Ave');
+VALUES (DEFAULT, 'Jane Smith', 'Manager', 'HR', TO_DATE('2021-12-01', 'YYYY-MM-DD'), 'Part-time', 'jane.smith@example.com', '456 Maple Ave');
 
 INSERT INTO employees (employee_id, full_name, job_title, department, hire_date, employment_status, contact_info, address)
-VALUES (employees_seq.NEXTVAL, 'Alice Johnson', 'Designer', 'Marketing', TO_DATE('2023-03-10', 'YYYY-MM-DD'), 'Contractor', 'alice.johnson@example.com', '789 Oak Dr');
+VALUES (DEFAULT, 'Alice Johnson', 'Designer', 'Marketing', TO_DATE('2023-03-10', 'YYYY-MM-DD'), 'Contractor', 'alice.johnson@example.com', '789 Oak Dr');
 
 INSERT INTO employees (employee_id, full_name, job_title, department, hire_date, employment_status, contact_info, address)
-VALUES (employees_seq.NEXTVAL, 'Mark Johnson', 'Sales Manager', 'Sales', TO_DATE('2019-03-10', 'YYYY-MM-DD'), 'Active', 'mark.johnson@example.com', '789 Pine St');
+VALUES (DEFAULT, 'Mark Johnson', 'Sales Manager', 'Sales', TO_DATE('2019-03-10', 'YYYY-MM-DD'), 'Active', 'mark.johnson@example.com', '789 Pine St');

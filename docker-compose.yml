@@ -1,16 +1,15 @@
-version: '3.8'
 services:
   db:
-    image: gvenzl/oracle-xe
+    image: gvenzl/oracle-free:latest
     ports:
       - "1521:1521"
     environment:
       ORACLE_PASSWORD: 12345
     healthcheck:
-      test: ["CMD", "sqlplus", "-L", "system/12345@//localhost:1521/XEPDB1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD", "sqlplus", "-L", "system/12345@//db:1521/FREEPDB1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
 
   backend:
     build:
@@ -18,7 +17,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@db:1521:xe
+      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@db:1521/FREEPDB1
       SPRING_DATASOURCE_USERNAME: system
       SPRING_DATASOURCE_PASSWORD: 12345
     depends_on:
@@ -31,4 +30,12 @@ services:
     depends_on:
       - backend
     environment:
-      DISPLAY: host.docker.internal:0
+      DISPLAY: "host.docker.internal:0.0"
+      WAYLAND_DISPLAY: $WAYLAND_DISPLAY
+      XDG_RUNTIME_DIR: $XDG_RUNTIME_DIR
+      PULSE_SERVER: $PULSE_SERVER
+      _JAVA_OPTIONS: "-Dawt.useSystemAAFontSettings=on -Dswing.aatext=true"
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /mnt/wslg:/mnt/wslg
+    network_mode: "host"

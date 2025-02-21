@@ -16,6 +16,7 @@ import java.security.Key;
 import java.util.*;
 import java.util.stream.Collectors;
 
+// This class provides functionality to generate, validate, and extract information from JWT tokens.
 @Profile("!test")
 @Component
 public class JwtTokenProvider {
@@ -27,6 +28,9 @@ public class JwtTokenProvider {
     private int jwtExpiration;
 
     private Key key;
+
+    // Purpose: This method is called after the constructor to initialize the key object.
+    // It decodes the jwtSecret (which is stored in Base64) and then uses it to generate a signing key using HMAC (Hash-based Message Authentication Code) with SHA-512
 
     @PostConstruct
     public void init() {

@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
+// This class is a custom implementation of AbstractAuthenticationToken for JWT-based authentication.
 public class JwtAuthenticationToken extends AbstractAuthenticationToken {
 
     private final UserDetails principal;

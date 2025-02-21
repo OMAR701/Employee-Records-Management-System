@@ -18,6 +18,9 @@ public class LoginUI extends JFrame {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setUndecorated(true);
         initComponents();
+        this.toFront();
+        this.requestFocus();
+        this.repaint();
     }
 
     private void initComponents() {
@@ -118,11 +121,9 @@ public class LoginUI extends JFrame {
         notification.setSize(350, 200);
         notification.setLocationRelativeTo(this);
         notification.setLayout(new BorderLayout());
-
         JPanel outerPanel = new JPanel(new BorderLayout());
         outerPanel.setBackground(Color.WHITE);
         outerPanel.setBorder(BorderFactory.createLineBorder(success ? new Color(0, 200, 100) : new Color(200, 50, 50), 4));
-
         JLabel iconLabel = new JLabel();
         iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
         if (success) {
@@ -132,7 +133,6 @@ public class LoginUI extends JFrame {
             iconLabel.setIcon(new ImageIcon(new ImageIcon(getClass().getResource("/icons/error.png"))
                     .getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH)));
         }
-
         JLabel messageLabel = new JLabel(message, SwingConstants.CENTER);
         messageLabel.setFont(new Font("Arial", Font.BOLD, 16));
         messageLabel.setForeground(success ? new Color(0, 150, 80) : new Color(200, 50, 50));
@@ -160,6 +160,13 @@ public class LoginUI extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new LoginUI().setVisible(true));
+        SwingUtilities.invokeLater(() ->{
+            LoginUI login = new LoginUI();
+            login.setVisible(true);
+            login.toFront();
+            login.requestFocus();
+            login.repaint();
+            login.setExtendedState(JFrame.NORMAL);
+        });
     }
 }

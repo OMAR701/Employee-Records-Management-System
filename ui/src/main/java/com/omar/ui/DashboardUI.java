@@ -29,6 +29,9 @@ public class DashboardUI extends JFrame {
 
         initComponents();
         setVisible(true);
+        this.toFront();
+        this.requestFocus();
+        this.repaint();
     }
 
 

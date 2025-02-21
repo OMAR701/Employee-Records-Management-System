@@ -10,6 +10,7 @@ spring:
     init:
       mode: always
       data-locations: classpath:data.sql
+      platform: oracle
   jpa:
     database-platform: org.hibernate.dialect.OracleDialect
     hibernate:
@@ -44,6 +45,7 @@ swagger:
     name: "Omar"
     url: "https://github.com/OMAR701"
     email: "omarkader701@gmail.com"
+
 api:
   base-path: /api/v1
 

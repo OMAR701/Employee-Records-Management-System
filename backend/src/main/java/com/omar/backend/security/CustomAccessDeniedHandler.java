@@ -10,6 +10,10 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+
+
+// Purpose: This class handles access denied exceptions (403 Forbidden errors).
+
 @Profile("!test")
 @Component
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {

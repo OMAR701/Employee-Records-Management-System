@@ -7,6 +7,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserUtils {
 
+
+    // SecurityContextHolder: This class is used to retrieve authentication information stored in the security context of the current thread. It’s commonly used in Spring Security to handle user authentication and authorization.
+    //Authentication: Represents the authentication details of the currently authenticated user.
+    //UserDetails: A Spring Security interface for storing user-related information, such as username, password, and granted authorities (roles).
+
     public static String getAuthenticatedUserRole() {
         return SecurityContextHolder.getContext().getAuthentication().getAuthorities()
                 .stream().findFirst()
